@@ -10,26 +10,27 @@ security:
                 class: App\Entity\User
                 property: email
     firewalls:
-        secured_area:
-            form_login:
-                login_path: app_login
-                check_path: app_login
-                enable_csrf: true
         dev:
             pattern: ^/(_(profiler|wdt)|css|images|js)/
             security: false
         main:
             lazy: true
             provider: app_user_provider
-            form_login:
-                login_path: app_login
-                check_path: app_login
-                enable_csrf: false
+#            form_login:
+#                login_path: app_login
+#                check_path: app_login
+#                enable_csrf: false
             logout:
                 path: app_logout
             json_login:
-                check_path:
-                    /api/login
+                check_path: /api/login
+                success_handler: App\Security\Authentication\CustomAuthenticationSuccessHandler
+                failure_handler: lexik_jwt_authentication.handler.authentication_failure
+        api:
+            pattern: ^/api
+            stateless: true
+            jwt : ~
+
 
 
             # activate different ways to authenticate
@@ -41,8 +42,8 @@ security:
     # Easy way to control access for large sections of your site
     # Note: Only the *first* access control that matches will be used
     access_control:
-        # - { path: ^/admin, roles: ROLE_ADMIN }
-        # - { path: ^/profile, roles: ROLE_USER }
+            - { path: ^/api/login, roles: PUBLIC_ACCESS }
+            - { path: ^/api,       roles: IS_AUTHENTICATED_FULLY }
 
 when@test:
     security:

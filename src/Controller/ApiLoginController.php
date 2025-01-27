@@ -4,18 +4,17 @@ namespace App\Controller;
 
 use App\Entity\User;
 use App\Repository\UserRepository;
+use Lexik\Bundle\JWTAuthenticationBundle\Services\JWTTokenManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
-use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\PasswordHasher\Hasher\UserPasswordHasherInterface;
 use Symfony\Component\Routing\Attribute\Route;
-use Symfony\Component\Security\Http\Attribute\CurrentUser;
 
 final class ApiLoginController extends AbstractController
 {
     #[Route('/api/login', name: 'api_login', methods: ['POST'])]
-    public function login(Request $request, UserPasswordHasherInterface $passwordEncoder, UserRepository $userRepository): JsonResponse
+    public function login(Request $request, UserPasswordHasherInterface $passwordEncoder, UserRepository $userRepository, JWTTokenManagerInterface $jwt): JsonResponse
     {
         // Récupérer les données envoyées par la requête (username, password)
         $data = json_decode($request->getContent(), true);
@@ -37,7 +36,9 @@ final class ApiLoginController extends AbstractController
         if (!$passwordEncoder->isPasswordValid($user, $data['password'])) {
             return new JsonResponse(['error' => 'Invalid password.'], JsonResponse::HTTP_UNAUTHORIZED);
         }
-        
+
+        //Créer le token
+        $token = $jwt->create($user);
         $userData = [
             'id' => $user->getId(),
             'email' => $user->getUserIdentifier(),
@@ -45,6 +46,7 @@ final class ApiLoginController extends AbstractController
             'forename' => $user->getForename(),
             'number' => $user->getNumber(),
             'roles' => $user->getRoles(),
+            'token' => $token
         ];
 
         return new JsonResponse($userData);
