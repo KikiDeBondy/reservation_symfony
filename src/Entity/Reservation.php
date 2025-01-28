@@ -5,6 +5,8 @@ namespace App\Entity;
 use App\Repository\ReservationRepository;
 use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
+use Symfony\Component\Validator\Constraints\DateTime;
+use Symfony\Component\Validator\Constraints\NotBlank;
 
 #[ORM\Entity(repositoryClass: ReservationRepository::class)]
 class Reservation
@@ -15,18 +17,23 @@ class Reservation
     private ?int $id = null;
 
     #[ORM\Column(length: 255)]
+    #[NotBlank(message: 'Le titre est obligatoire')]
     private ?string $title = null;
 
     #[ORM\Column(type: Types::DATETIME_MUTABLE)]
+    #[NotBlank(message: 'La date de début est obligatoire')]
     private ?\DateTimeInterface $start = null;
 
     #[ORM\Column(type: Types::DATETIME_MUTABLE)]
+    #[NotBlank(message: 'La date de fin est obligatoire')]
     private ?\DateTimeInterface $end = null;
 
     #[ORM\ManyToOne(inversedBy: 'reservations')]
+    #[NotBlank(message: 'Le client est obligatoire')]
     private ?User $client = null;
 
     #[ORM\ManyToOne(inversedBy: 'reservations')]
+    #[NotBlank(message: 'Le coiffeur est obligatoire')]
     private ?User $barber = null;
 
     public function getId(): ?int
