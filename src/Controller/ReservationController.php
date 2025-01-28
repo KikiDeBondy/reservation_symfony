@@ -4,8 +4,10 @@ namespace App\Controller;
 
 use App\Entity\Reservation;
 use App\Entity\User;
+use App\Exception\ReservationValidationException;
 use App\Form\ReservationType;
 use App\Repository\ReservationRepository;
+use App\Services\ReservationService;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\JsonResponse;
@@ -47,45 +49,26 @@ final class ReservationController extends AbstractController
 //        ]);
 //    }
     #[Route('/new', name: 'app_reservation_new', methods: ['POST'])]
-    public function new(Request $request, EntityManagerInterface $entityManager, ValidatorInterface $validator): JsonResponse
+    public function new(Request $request, ReservationService $reservationService): JsonResponse
     {
-        $data = json_decode($request->getContent(), true);
-        $reservation = new Reservation();
-        $reservation->setTitle($data['title']);
+        try {
+            $data = json_decode($request->getContent(), true);
+            $reservation = $reservationService->store($data);
 
-        $start = \DateTime::createFromFormat('d-m-Y H:i:s', $data['start']);
-        $end = \DateTime::createFromFormat('d-m-Y H:i:s', $data['end']);
-
-        if (!$start || !$end) {
-            return new JsonResponse(['error' => 'Format invalide. Ceci est attendu "d-m-Y H:i:s".'], 400);
-        }
-
-        $reservation->setStart($start);
-        $reservation->setEnd($end);
-
-        $client = $entityManager->getRepository(User::class)->find($data['client_id']);
-        $barber = $entityManager->getRepository(User::class)->find($data['barber_id']);
-
-        $reservation->setClient($client);
-        $reservation->setBarber($barber);
-        $errors = $validator->validate($reservation);
-        if (count($errors) > 0) {
-            $errorMessages = [];
-            foreach ($errors as $error) {
-                $errorMessages[] = $error->getMessage();
-            }
-
+            return new JsonResponse($reservation, 201);
+        } catch (ReservationValidationException $e) {
             return new JsonResponse([
                 'error' => 'Validation failed',
-                'form_errors' => $errorMessages,
+                'form_errors' => $e->getErrors(),
             ], 400);
-        }else{
-
-            $entityManager->persist($reservation);
-            $entityManager->flush();
-            return new JsonResponse($reservation, 201);
+        } catch (\Exception $e) {
+            return new JsonResponse([
+                'error' => 'Internal Server Error',
+                'message' => $e->getMessage()
+            ], 500);
         }
     }
+
 
 //    #[Route('/{id}', name: 'app_reservation_show', methods: ['GET'])]
 //    public function show(Reservation $reservation): Response
