@@ -21,32 +21,8 @@ class ReservationService
         $this->validator = $validator;
     }
 
-    public function store(array $data): Reservation
+    public function store(Reservation $reservation): Reservation
     {
-        $reservation = new Reservation();
-
-        // Validation et parsing des dates
-        $start = \DateTime::createFromFormat('d-m-Y H:i:s', $data['start']);
-        $end = \DateTime::createFromFormat('d-m-Y H:i:s', $data['end']);
-
-        if (!$start || !$end) {
-            throw new ReservationValidationException(['Invalid date format. Expected "d-m-Y H:i:s".']);
-        }
-
-        $reservation->setTitle($data['title']);
-        $reservation->setStart($start);
-        $reservation->setEnd($end);
-
-        // Validation client et barber
-        $client = $this->entityManager->getRepository(User::class)->find($data['client_id']);
-        $barber = $this->entityManager->getRepository(User::class)->find($data['barber_id']);
-
-        if (!$client || !$barber) {
-            throw new EntityNotFoundException('Client or Barber not found.');
-        }
-
-        $reservation->setClient($client);
-        $reservation->setBarber($barber);
 
         // Validation des données de la réservation
         $errors = $this->validator->validate($reservation);

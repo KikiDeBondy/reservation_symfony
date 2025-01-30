@@ -14,12 +14,15 @@ use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Attribute\Route;
+use Symfony\Component\Serializer\Context\Normalizer\DateTimeNormalizerContextBuilder;
 use Symfony\Component\Serializer\SerializerInterface;
 use Symfony\Component\Validator\Validator\ValidatorInterface;
 
 #[Route('/reservation')]
 final class ReservationController extends AbstractController
 {
+
+    public function __construct(private ReservationService $reservationService, private SerializerInterface $serializer){}
 
     #[Route(name: 'app_reservation_index', methods: ['GET'])]
     public function index(ReservationRepository $reservationRepository, SerializerInterface $serializer): Response
@@ -49,11 +52,20 @@ final class ReservationController extends AbstractController
 //        ]);
 //    }
     #[Route('/new', name: 'app_reservation_new', methods: ['POST'])]
-    public function new(Request $request, ReservationService $reservationService): JsonResponse
+    public function new(Request $request, EntityManagerInterface $entityManager): JsonResponse
     {
         try {
-            $data = json_decode($request->getContent(), true);
-            $reservation = $reservationService->store($data);
+            // Mettre la date en français
+            $contextBuilder = (new DateTimeNormalizerContextBuilder())
+                ->withFormat('d/m/Y H:i:s');
+            // Deserialiser la requête pour avoir un objet Reservation
+            $reservation = $this->serializer->deserialize($request->getContent(), Reservation::class, 'json',$contextBuilder->toArray());
+            // Récupérer les objets client et coiffeur grâce à leurs id
+            $client = $entityManager->getRepository(User::class)->find($request->toArray()['client_id']);
+            $barber = $entityManager->getRepository(User::class)->find($request->toArray()['barber_id']);
+            $reservation->setClient($client);
+            $reservation->setBarber($barber);
+            $reservation = $this->reservationService->store($reservation);
 
             return new JsonResponse($reservation, 201);
         } catch (ReservationValidationException $e) {
