@@ -3,61 +3,48 @@
 namespace App\Controller;
 
 use App\Entity\User;
+use App\Exception\RegisterValidationException;
+use App\Exception\ReservationValidationException;
 use App\Form\RegistrationFormType;
 use App\Security\EmailVerifier;
+use App\Services\RegisterService;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bridge\Twig\Mime\TemplatedEmail;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
+use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Mime\Address;
 use Symfony\Component\PasswordHasher\Hasher\UserPasswordHasherInterface;
 use Symfony\Component\Routing\Attribute\Route;
+use Symfony\Component\Serializer\SerializerInterface;
 use Symfony\Contracts\Translation\TranslatorInterface;
 use SymfonyCasts\Bundle\VerifyEmail\Exception\VerifyEmailExceptionInterface;
 
 class RegistrationController extends AbstractController
 {
-    public function __construct(private EmailVerifier $emailVerifier)
+    public function __construct(private EmailVerifier $emailVerifier, private SerializerInterface $serializer, private RegisterService $registerService)
     {
     }
 
-    #[Route('/register', name: 'app_register')]
-    public function register(Request $request, UserPasswordHasherInterface $userPasswordHasher, EntityManagerInterface $entityManager): Response
+    #[Route('/register', name: 'app_register', methods: [ 'POST'])]
+    public function register(Request $request): Response
     {
-        $user = new User();
-        $form = $this->createForm(RegistrationFormType::class, $user);
-        $form->handleRequest($request);
-//        dd(2);
-
-        if ($form->isSubmitted() && $form->isValid()) {
-            /** @var string $plainPassword */
-            $plainPassword = $form->get('plainPassword')->getData();
-
-            // encode the plain password
-            $user->setPassword($userPasswordHasher->hashPassword($user, $plainPassword));
-            //Role user par défaut
-            $user->setRoles(['ROLE_USER']);
-            $entityManager->persist($user);
-            $entityManager->flush();
-
-            // generate a signed url and email it to the user
-//            $this->emailVerifier->sendEmailConfirmation('app_verify_email', $user,
-//                (new TemplatedEmail())
-//                    ->from(new Address('killian49@hotmail.fr', 'AdminEmail'))
-//                    ->to((string) $user->getEmail())
-//                    ->subject('Please Confirm your Email')
-//                    ->htmlTemplate('registration/confirmation_email.html.twig')
-//            );
-
-            // do anything else you need here, like send an email
-
-            return $this->redirectToRoute('app_user_index');
+        try{
+            $user = $this->serializer->deserialize($request->getContent(), User::class, 'json');
+            $user = $this->registerService->store($user);
+            return new JsonResponse($user, Response::HTTP_CREATED);
+        }catch (RegisterValidationException $e) {
+            return new JsonResponse([
+                'error' => 'Validation failed',
+                'form_errors' => $e->getErrors(),
+            ], 400);
+        } catch (\Exception $e) {
+            return new JsonResponse([
+                'error' => 'Internal Server Error',
+                'message' => $e->getMessage()
+            ], 500);
         }
-
-        return $this->render('registration/register.html.twig', [
-            'registrationForm' => $form,
-        ]);
     }
 
     #[Route('/verify/email', name: 'app_verify_email')]
