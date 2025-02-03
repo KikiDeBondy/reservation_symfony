@@ -15,7 +15,7 @@ class ReservationService
     private $entityManager;
     private $validator;
 
-    public function __construct(EntityManagerInterface $entityManager, ValidatorInterface $validator)
+    public function __construct(EntityManagerInterface $entityManager, ValidatorInterface $validator, private readonly ReservationRepository $reservationRepository)
     {
         $this->entityManager = $entityManager;
         $this->validator = $validator;
@@ -38,5 +38,11 @@ class ReservationService
         $this->entityManager->flush();
 
         return $reservation;
+    }
+
+    public function reservationByUser(int $id): array
+    {
+;
+        return $this->reservationRepository->findByUser($id);
     }
 }

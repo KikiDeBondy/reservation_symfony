@@ -32,25 +32,6 @@ final class ReservationController extends AbstractController
         ]);
     }
 
-//    #[Route('/new', name: 'app_reservation_new', methods: ['GET', 'POST'])]
-//    public function new(Request $request, EntityManagerInterface $entityManager): Response
-//    {
-//        $reservation = new Reservation();
-//        $form = $this->createForm(ReservationType::class, $reservation);
-//        $form->handleRequest($request);
-//
-//        if ($form->isSubmitted() && $form->isValid()) {
-//            $entityManager->persist($reservation);
-//            $entityManager->flush();
-//
-//            return $this->redirectToRoute('app_reservation_index', [], Response::HTTP_SEE_OTHER);
-//        }
-//
-//        return $this->render('reservation/new.html.twig', [
-//            'reservation' => $reservation,
-//            'form' => $form,
-//        ]);
-//    }
     #[Route('/new', name: 'app_reservation_new', methods: ['POST'])]
     public function new(Request $request, EntityManagerInterface $entityManager): JsonResponse
     {
@@ -79,6 +60,14 @@ final class ReservationController extends AbstractController
                 'message' => $e->getMessage()
             ], 500);
         }
+    }
+
+    #[Route('ByUser/{id}', name: 'app_reservation_show', methods: ['GET'])]
+    public function reservationByUser(int $id)
+    {
+        $reservations = $this->reservationService->reservationByUser($id);
+//        dd($reservations);
+        return $this->json($reservations);
     }
 
 
