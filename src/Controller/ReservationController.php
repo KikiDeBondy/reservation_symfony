@@ -22,7 +22,7 @@ use Symfony\Component\Validator\Validator\ValidatorInterface;
 final class ReservationController extends AbstractController
 {
 
-    public function __construct(private ReservationService $reservationService, private SerializerInterface $serializer){}
+    public function __construct(private readonly ReservationService $reservationService, private readonly SerializerInterface $serializer){}
 
     #[Route(name: 'app_reservation_index', methods: ['GET'])]
     public function index(ReservationRepository $reservationRepository, SerializerInterface $serializer): Response
@@ -48,7 +48,7 @@ final class ReservationController extends AbstractController
             $reservation->setBarber($barber);
             $reservation = $this->reservationService->store($reservation);
 
-            return new JsonResponse($reservation, 201);
+            return $this->json($reservation, 201);
         } catch (ReservationValidationException $e) {
             return new JsonResponse([
                 'error' => 'Validation failed',
@@ -65,9 +65,29 @@ final class ReservationController extends AbstractController
     #[Route('ByUser/{id}', name: 'app_reservation_show', methods: ['GET'])]
     public function reservationByUser(int $id)
     {
+        try{
         $reservations = $this->reservationService->reservationByUser($id);
-//        dd($reservations);
         return $this->json($reservations);
+        }catch (\Exception $e){
+            return new JsonResponse([
+                'error' => 'Erreur lors de la récupération des réservations de l\'utilisateur',
+                'message' => $e->getMessage()
+            ], 500);
+        }
+    }
+
+    #[Route('/weekly/{start}', name: 'app_reservation_weekly', methods: ['GET'])]
+    public function weeklyReservation(\DateTime $start): Response
+    {
+        try{
+            $reservations = $this->reservationService->weeklyReservation($start);
+            return $this->json($reservations);
+        }catch (\Exception $e){
+            return new JsonResponse([
+                'error' => 'Erreur lors de la récupération des réservations de la semaine',
+                'message' => $e->getMessage()
+            ], 500);
+        }
     }
 
 

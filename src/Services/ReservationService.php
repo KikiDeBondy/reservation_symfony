@@ -42,7 +42,10 @@ class ReservationService
 
     public function reservationByUser(int $id): array
     {
-;
         return $this->reservationRepository->findByUser($id);
+    }
+    public function weeklyReservation(\DateTime $start): array
+    {
+        return $this->reservationRepository->weeklyReservation($start);
     }
 }

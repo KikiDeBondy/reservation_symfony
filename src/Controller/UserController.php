@@ -24,9 +24,7 @@ final class UserController extends AbstractController
     #[Route('api/user/{id}', name: 'app_user_show', methods: ['GET'])]
     public function show(User $user): Response
     {
-        return $this->json([
-            'user'=>$user,
-        ]);
+        return $this->json($user);
     }
 
 //

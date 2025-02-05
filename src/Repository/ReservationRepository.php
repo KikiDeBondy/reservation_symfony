@@ -25,6 +25,20 @@ class ReservationRepository extends ServiceEntityRepository
             ->getResult();
     }
 
+    public function weeklyReservation(\DateTime $start){
+        // Retourner les réservations de la semaine (7 jours) à partir de la date $start
+        $end = clone $start;
+        $end->modify('+7 days');
+        return $this->createQueryBuilder('r')
+            ->andWhere('r.start >= :start')
+            ->andWhere('r.start < :end')
+            ->setParameter('start', $start)
+            ->setParameter('end', $end)
+            ->orderBy('r.start', 'ASC')
+            ->getQuery()
+            ->getResult();
+    }
+
     //    /**
     //     * @return Reservation[] Returns an array of Reservation objects
     //     */
