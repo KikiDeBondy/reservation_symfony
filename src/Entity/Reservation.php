@@ -5,10 +5,13 @@ namespace App\Entity;
 use App\Repository\ReservationRepository;
 use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
+use Symfony\Bridge\Doctrine\Validator\Constraints\UniqueEntity;
 use Symfony\Component\Validator\Constraints\DateTime;
 use Symfony\Component\Validator\Constraints\NotBlank;
 
 #[ORM\Entity(repositoryClass: ReservationRepository::class)]
+#[ORM\UniqueConstraint(name: 'UNIQ_IDENTIFIER_START', fields: ['start'])]
+#[UniqueEntity(fields: ['start'], message: 'Il y a déjà une réservation à cette date')]
 class Reservation
 {
     #[ORM\Id]

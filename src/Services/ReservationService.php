@@ -48,4 +48,22 @@ class ReservationService
     {
         return $this->reservationRepository->weeklyReservation($start);
     }
+
+    public function delete(int $id, int $userId): Reservation
+    {
+        $reservation = $this->reservationRepository->find($id);
+        if (!$reservation) {
+            throw new EntityNotFoundException('La réservation n\'existe pas');
+        }
+        if($reservation->getClient()->getId() !== $userId){
+            throw new EntityNotFoundException('Vous n\'êtes pas autorisé à supprimer cette réservation');
+        }
+        // Si la réservation est déjà passée, on ne peut pas la supprimer
+        if($reservation->getStart() < new \DateTime()){
+            throw new EntityNotFoundException('Vous ne pouvez pas supprimer une réservation passée');
+        }
+        $this->entityManager->remove($reservation);
+        $this->entityManager->flush();
+        return $reservation;
+    }
 }

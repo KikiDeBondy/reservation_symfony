@@ -89,6 +89,19 @@ final class ReservationController extends AbstractController
             ], 500);
         }
     }
+    #[Route('/delete/{id}/{userId}', name: 'app_reservation_delete', methods: ['DELETE'])]
+    public function delete(int $id, int $userId): Response
+    {
+        try{
+            $reservation = $this->reservationService->delete($id, $userId);
+            return $this->json($reservation);
+        }catch (\Exception $e){
+            return new JsonResponse([
+                'error' => 'Erreur lors de la suppression de la réservation',
+                'message' => $e->getMessage()
+            ], 500);
+        }
+    }
 
 
 //    #[Route('/{id}', name: 'app_reservation_show', methods: ['GET'])]
