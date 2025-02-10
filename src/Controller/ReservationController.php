@@ -27,9 +27,7 @@ final class ReservationController extends AbstractController
     #[Route(name: 'app_reservation_index', methods: ['GET'])]
     public function index(ReservationRepository $reservationRepository, SerializerInterface $serializer): Response
     {
-        return $this->json([
-            'reservations' => $reservationRepository->findAll(),
-        ]);
+        return $this->json($reservationRepository->findAll());
     }
 
     #[Route('/new', name: 'app_reservation_new', methods: ['POST'])]

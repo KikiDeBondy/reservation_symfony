@@ -63,9 +63,16 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     #[\Symfony\Component\Serializer\Annotation\Ignore]
     private Collection $reservations;
 
+    /**
+     * @var Collection<int, Slot>
+     */
+    #[ORM\OneToMany(targetEntity: Slot::class, mappedBy: 'barber_id')]
+    private Collection $slots;
+
     public function __construct()
     {
         $this->reservations = new ArrayCollection();
+        $this->slots = new ArrayCollection();
     }
 
 
@@ -204,6 +211,36 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
             // set the owning side to null (unless already changed)
             if ($reservation->getClient() === $this) {
                 $reservation->setClient(null);
+            }
+        }
+
+        return $this;
+    }
+
+    /**
+     * @return Collection<int, Slot>
+     */
+    public function getSlots(): Collection
+    {
+        return $this->slots;
+    }
+
+    public function addSlot(Slot $slot): static
+    {
+        if (!$this->slots->contains($slot)) {
+            $this->slots->add($slot);
+            $slot->setBarberId($this);
+        }
+
+        return $this;
+    }
+
+    public function removeSlot(Slot $slot): static
+    {
+        if ($this->slots->removeElement($slot)) {
+            // set the owning side to null (unless already changed)
+            if ($slot->getBarberId() === $this) {
+                $slot->setBarberId(null);
             }
         }
 
