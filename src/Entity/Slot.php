@@ -5,6 +5,9 @@ namespace App\Entity;
 use App\Repository\SlotRepository;
 use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
+use Symfony\Component\DependencyInjection\Attribute\Exclude;
+use Symfony\Component\Serializer\Annotation\Groups;
+use Symfony\Component\Serializer\Annotation\MaxDepth;
 
 #[ORM\Entity(repositoryClass: SlotRepository::class)]
 #[ORM\UniqueConstraint(name: 'unique_slot', columns: ['barber_id', 'date', 'start', 'end'])]
@@ -13,21 +16,27 @@ class Slot
     #[ORM\Id]
     #[ORM\GeneratedValue]
     #[ORM\Column]
+    #[Groups(['slot:read', 'slot:write'])]
     private ?int $id = null;
 
     #[ORM\ManyToOne(inversedBy: 'slots')]
+    #[Groups(['slot:read', 'slot:write'])]
     private ?User $barber_id = null;
 
     #[ORM\Column(type: Types::DATE_MUTABLE)]
+    #[Groups(['slot:read', 'slot:write'])]
     private ?\DateTimeInterface $date = null;
 
     #[ORM\Column(type: Types::TIME_MUTABLE)]
+    #[Groups(['slot:read', 'slot:write'])]
     private ?\DateTimeInterface $start = null;
 
     #[ORM\Column(type: Types::TIME_MUTABLE)]
+    #[Groups(['slot:read', 'slot:write'])]
     private ?\DateTimeInterface $end = null;
 
     #[ORM\Column]
+    #[Groups(['slot:read', 'slot:write'])]
     private ?bool $is_reserved = null;
 
     public function getId(): ?int

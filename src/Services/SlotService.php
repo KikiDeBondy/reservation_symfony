@@ -26,6 +26,11 @@ class SlotService
         $this->entityManager->flush();
     }
 
+    public function weeklySlotUnreserve(int $id): array
+    {
+        return $this->slotRepository->weeklySlotUnreserve($id);
+    }
+
 
 
 }

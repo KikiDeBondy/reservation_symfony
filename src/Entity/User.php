@@ -10,6 +10,7 @@ use Symfony\Bridge\Doctrine\Validator\Constraints\UniqueEntity;
 use Symfony\Component\Security\Core\User\PasswordAuthenticatedUserInterface;
 use Symfony\Component\Security\Core\User\UserInterface;
 use Symfony\Component\Serializer\Annotation\Groups;
+use Symfony\Component\Serializer\Annotation\MaxDepth;
 use Symfony\Component\Serializer\Attribute\Ignore;
 use Symfony\Component\Validator\Constraints\Length;
 use Symfony\Component\Validator\Constraints\NotBlank;
@@ -22,16 +23,19 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     #[ORM\Id]
     #[ORM\GeneratedValue]
     #[ORM\Column]
+    #[Groups(['user:read', 'slot:read'])]
     private ?int $id = null;
 
     #[ORM\Column(length: 180)]
     #[NotBlank(message: 'L\'email est obligatoire')]
+    #[Groups(['user:read'])]
     private ?string $email = null;
 
     /**
      * @var list<string> The user roles
      */
     #[ORM\Column]
+    #[Groups(['user:read'])]
     private array $roles = [];
 
     /**
@@ -40,26 +44,28 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     #[ORM\Column]
     #[NotBlank(message: 'Le mot de passe est obligatoire')]
     #[Length(min: 6, minMessage: 'Le mot de passe doit contenir au moins 6 caractères')]
+    #[Groups(['user:read'])]
     private ?string $password = null;
 
     #[ORM\Column(length: 255)]
     #[NotBlank(message: 'Le nom est obligatoire')]
+    #[Groups(['user:read'])]
     private ?string $name = null;
 
     #[ORM\Column(length: 255)]
     #[NotBlank(message: 'Le prénom est obligatoire')]
+    #[Groups(['user:read'])]
     private ?string $forename = null;
 
     #[ORM\Column(length: 10, nullable: true)]
     #[Length(min: 10, max: 10, minMessage: 'Le numéro de téléphone doit contenir 10 caractères', maxMessage: 'Le numéro de téléphone doit contenir 10 caractères')]
+    #[Groups(['user:read'])]
     private ?string $number = null;
 
     /**
      * @var Collection<int, Reservation>
      */
     #[ORM\OneToMany(targetEntity: Reservation::class, mappedBy: 'client')]
-//    #[Groups(['user:read'])]
-
     #[\Symfony\Component\Serializer\Annotation\Ignore]
     private Collection $reservations;
 
@@ -67,6 +73,7 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
      * @var Collection<int, Slot>
      */
     #[ORM\OneToMany(targetEntity: Slot::class, mappedBy: 'barber_id')]
+    #[Groups(['user:read'])]
     private Collection $slots;
 
     public function __construct()

@@ -21,6 +21,22 @@ final class SlotController extends AbstractController
 {
     public function __construct(private readonly KernelInterface $kernel, private readonly SlotService $slotService){}
 
+    //Retourner une semaine des slots d'un coiffeur donné
+    #[Route('/slot/weekly/{id}', name: 'app_slot_weekly', methods: ['GET'])]
+    public function weekly(int $id): Response
+    {
+        try{
+            $slots = $this->slotService->weeklySlotUnreserve($id);
+            return $this->json($slots, 200, [], ['groups' => 'slot:read']);
+        }catch (\Exception $e) {
+            return new JsonResponse([
+                'error' => 'Internal Server Error',
+                'message' => $e->getMessage()
+            ], 500);
+        }
+
+    }
+//
     #[Route('/slot/update/{id}', name: 'app_slot_update', methods: ['PUT'])]
     public function update(Request $request, int $id): Response
     {
