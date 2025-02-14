@@ -19,7 +19,8 @@ class Slot
     #[Groups(['slot:read', 'slot:write'])]
     private ?int $id = null;
 
-    #[ORM\ManyToOne(inversedBy: 'slots')]
+    #[ORM\ManyToOne(targetEntity: User::class, inversedBy: 'slots')]
+    #[ORM\JoinColumn(name: "barber_id", referencedColumnName: "id")]
     #[Groups(['slot:read', 'slot:write'])]
     private ?User $barber_id = null;
 

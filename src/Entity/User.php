@@ -49,12 +49,12 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
 
     #[ORM\Column(length: 255)]
     #[NotBlank(message: 'Le nom est obligatoire')]
-    #[Groups(['user:read'])]
+    #[Groups(['user:read', 'account:read'])]
     private ?string $name = null;
 
     #[ORM\Column(length: 255)]
     #[NotBlank(message: 'Le prénom est obligatoire')]
-    #[Groups(['user:read'])]
+    #[Groups(['user:read', 'account:read'])]
     private ?string $forename = null;
 
     #[ORM\Column(length: 10, nullable: true)]
@@ -67,6 +67,7 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
      */
     #[ORM\OneToMany(targetEntity: Reservation::class, mappedBy: 'client')]
     #[\Symfony\Component\Serializer\Annotation\Ignore]
+    #[Groups(['reservation:read'])]
     private Collection $reservations;
 
     /**

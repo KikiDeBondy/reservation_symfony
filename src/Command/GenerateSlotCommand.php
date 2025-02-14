@@ -3,7 +3,9 @@
 namespace App\Command;
 
 use App\Entity\Slot;
+use App\Repository\SlotRepository;
 use App\Repository\UserRepository;
+use App\Services\SlotService;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Component\Console\Attribute\AsCommand;
 use Symfony\Component\Console\Command\Command;
@@ -19,7 +21,11 @@ use Symfony\Component\Console\Style\SymfonyStyle;
 )]
 class GenerateSlotCommand extends Command
 {
-    public function __construct(private readonly EntityManagerInterface $entityManager,private readonly UserRepository $userRepository)
+    public function __construct(
+        private readonly EntityManagerInterface $entityManager,
+        private readonly UserRepository $userRepository,
+        private readonly SlotService $slotService
+    )
     {
         parent::__construct();
     }
@@ -44,6 +50,13 @@ class GenerateSlotCommand extends Command
         $output->writeln('Barbier introuvable.');
         return Command::FAILURE;
     }
+
+    $slotOfBarberExist = $this->slotService->slotOfBarberExist($barberId, $startDate);
+    var_dump($slotOfBarberExist);
+    if ($slotOfBarberExist) {
+        $output->writeln('Une des dates est déjà ajouter à vos créneaux');
+    }
+
 
     // Génération des créneaux de 30 minutes de 9 à 18h, pour chaque jour entre $startDate et $endDate
     $interval = new \DateInterval('PT30M');

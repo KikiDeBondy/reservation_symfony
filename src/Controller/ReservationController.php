@@ -46,7 +46,7 @@ final class ReservationController extends AbstractController
             $reservation->setBarber($barber);
             $reservation = $this->reservationService->store($reservation);
 
-            return $this->json($reservation, 201);
+            return $this->json($reservation, 201, [], ['groups' => ['reservation:read']]);
         } catch (ReservationValidationException $e) {
             return new JsonResponse([
                 'error' => 'Validation failed',
@@ -65,7 +65,7 @@ final class ReservationController extends AbstractController
     {
         try{
         $reservations = $this->reservationService->reservationByUser($id);
-        return $this->json($reservations);
+        return $this->json($reservations,200, [], ['groups' => ['reservation:read', 'account:read']]);
         }catch (\Exception $e){
             return new JsonResponse([
                 'error' => 'Erreur lors de la récupération des réservations de l\'utilisateur',
@@ -92,7 +92,7 @@ final class ReservationController extends AbstractController
     {
         try{
             $reservation = $this->reservationService->delete($id, $userId);
-            return $this->json($reservation);
+            return $this->json($reservation, 200, [], ['groups' => ['reservation:read', 'account:read']]);
         }catch (\Exception $e){
             return new JsonResponse([
                 'error' => 'Erreur lors de la suppression de la réservation',

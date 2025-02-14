@@ -19,11 +19,11 @@ use Symfony\Component\Serializer\SerializerInterface;
 
 final class SlotController extends AbstractController
 {
-    public function __construct(private readonly KernelInterface $kernel, private readonly SlotService $slotService){}
+    public function __construct(private readonly SlotService $slotService){}
 
     //Retourner une semaine des slots d'un coiffeur donné
-    #[Route('/slot/weekly/{id}', name: 'app_slot_weekly', methods: ['GET'])]
-    public function weekly(int $id): Response
+    #[Route('/slot/weekly/unreserved/{id}', name: 'app_slot_weekly_unreserved', methods: ['GET'])]
+    public function weeklyUnreserved(int $id): Response
     {
         try{
             $slots = $this->slotService->weeklySlotUnreserve($id);
@@ -36,7 +36,21 @@ final class SlotController extends AbstractController
         }
 
     }
-//
+    #[Route('/slot/weekly/{id}', name: 'app_slot_weekly', methods: ['GET'])]
+    public function weekly(int $id): Response
+    {
+        try{
+            $slots = $this->slotService->weeklySlot($id);
+            return $this->json($slots, 200, [], ['groups' => 'slot:read']);
+        }catch (\Exception $e) {
+            return new JsonResponse([
+                'error' => 'Internal Server Error',
+                'message' => $e->getMessage()
+            ], 500);
+        }
+
+    }
+
     #[Route('/slot/update/{id}', name: 'app_slot_update', methods: ['PUT'])]
     public function update(Request $request, int $id): Response
     {
@@ -57,35 +71,27 @@ final class SlotController extends AbstractController
     #[Route('/slot/generate', name: 'app_slot_generate', methods: ['POST'])]
     public function create(Request $request){
         try {
-            $application = new Application($this->kernel);
-
             $data = json_decode($request->getContent(), true);
+            $start = new \DateTime($data['start_date']);
+            $end = new \DateTime($data['end_date']);
+            $slot = $this->slotService->generateSlot($data['barber_id'],$start,$end);
+            return $this->json($slot, 200, [], ['groups' => 'slot:write']);
+        }catch (\Exception $e) {
+            return new JsonResponse([
+                'error' => 'Internal Server Error',
+                'message' => $e->getMessage()
+            ], 500);
+        }
+    }
 
-            // Vérifier si toutes les données nécessaires sont présentes
-            if (!isset($data['barber_id'], $data['start_date'], $data['end_date'])) {
-                return $this->json(['error' => 'barber_id, start_date and end_date are required'], Response::HTTP_BAD_REQUEST);
-            }
-
-            // Créer l'objet Input pour la commande
-            $input = new ArrayInput([
-                'command' => 'app:generate-slot',
-                'barber_id' => $data['barber_id'],
-                'start_date' => $data['start_date'],
-                'end_date' => $data['end_date']
-            ]);
-
-            // Créer un BufferedOutput pour capturer la sortie de la commande
-            $output = new BufferedOutput();
-
-            // Exécuter la commande
-            $application->run($input, $output);
-
-            // Récupérer la sortie de la commande (message)
-            $outputMessage = $output->fetch();
-
-            // Retourner la réponse avec le message généré par la commande
-            return $this->json(['message' => $outputMessage], Response::HTTP_OK);
-
+    #[Route('/slot/absent/{id}', name: 'app_slot_absent', methods: ['PUT'])]
+    public function absent(int $id, Request $request): Response{
+        try {
+            $data = json_decode($request->getContent(), true);
+            $start = new \DateTime($data['start_date']);
+            $end = new \DateTime($data['end_date']);
+            $slot = $this->slotService->absent($id, $start,$end);
+            return $this->json($slot, 200, [], ['groups' => 'slot:write']);
         }catch (\Exception $e) {
             return new JsonResponse([
                 'error' => 'Internal Server Error',

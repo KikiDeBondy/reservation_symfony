@@ -6,6 +6,7 @@ use App\Repository\ReservationRepository;
 use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Bridge\Doctrine\Validator\Constraints\UniqueEntity;
+use Symfony\Component\Serializer\Attribute\Groups;
 use Symfony\Component\Validator\Constraints\DateTime;
 use Symfony\Component\Validator\Constraints\NotBlank;
 
@@ -17,26 +18,32 @@ class Reservation
     #[ORM\Id]
     #[ORM\GeneratedValue]
     #[ORM\Column]
+    #[Groups(['reservation:read'])]
     private ?int $id = null;
 
     #[ORM\Column(length: 255)]
     #[NotBlank(message: 'Le titre est obligatoire')]
+    #[Groups(['reservation:read'])]
     private ?string $title = null;
 
     #[ORM\Column(type: Types::DATETIME_MUTABLE)]
     #[NotBlank(message: 'La date de début est obligatoire')]
+    #[Groups(['reservation:read'])]
     private ?\DateTimeInterface $start = null;
 
     #[ORM\Column(type: Types::DATETIME_MUTABLE)]
     #[NotBlank(message: 'La date de fin est obligatoire')]
+    #[Groups(['reservation:read'])]
     private ?\DateTimeInterface $end = null;
 
     #[ORM\ManyToOne(inversedBy: 'reservations')]
     #[NotBlank(message: 'Le client est obligatoire')]
+    #[Groups(['reservation:read'])]
     private ?User $client = null;
 
     #[ORM\ManyToOne(inversedBy: 'reservations')]
     #[NotBlank(message: 'Le coiffeur est obligatoire')]
+    #[Groups(['reservation:read'])]
     private ?User $barber = null;
 
     public function getId(): ?int
