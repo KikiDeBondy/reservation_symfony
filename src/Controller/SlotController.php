@@ -22,11 +22,11 @@ final class SlotController extends AbstractController
     public function __construct(private readonly SlotService $slotService){}
 
     //Retourner une semaine des slots d'un coiffeur donné
-    #[Route('/slot/weekly/unreserved/{id}', name: 'app_slot_weekly_unreserved', methods: ['GET'])]
-    public function weeklyUnreserved(int $id): Response
+    #[Route('/slot/weekly/unreserved/{id}/{page}', name: 'app_slot_weekly_unreserved', methods: ['GET'])]
+    public function weeklyUnreserved(int $id, int $page): Response
     {
         try{
-            $slots = $this->slotService->weeklySlotUnreserve($id);
+            $slots = $this->slotService->weeklySlotUnreserve($id, $page);
             return $this->json($slots, 200, [], ['groups' => 'slot:read']);
         }catch (\Exception $e) {
             return new JsonResponse([
@@ -36,11 +36,11 @@ final class SlotController extends AbstractController
         }
 
     }
-    #[Route('/slot/weekly/{id}', name: 'app_slot_weekly', methods: ['GET'])]
-    public function weekly(int $id): Response
+    #[Route('/slot/weekly/{id}/{page}', name: 'app_slot_weekly', methods: ['GET'])]
+    public function weekly(int $id, int $page): Response
     {
         try{
-            $slots = $this->slotService->weeklySlot($id);
+            $slots = $this->slotService->weeklySlot($id, $page);
             return $this->json($slots, 200, [], ['groups' => 'slot:read']);
         }catch (\Exception $e) {
             return new JsonResponse([
@@ -92,6 +92,20 @@ final class SlotController extends AbstractController
             $end = new \DateTime($data['end_date']);
             $slot = $this->slotService->absent($id, $start,$end);
             return $this->json($slot, 200, [], ['groups' => 'slot:write']);
+        }catch (\Exception $e) {
+            return new JsonResponse([
+                'error' => 'Internal Server Error',
+                'message' => $e->getMessage()
+            ], 500);
+        }
+    }
+    #[Route('/test/{id}/{page}', name: 'app_slot_absent', methods: ['GET'])]
+    public function test(int $id,int $page,SlotRepository $slotRepository)
+    {
+        try {
+            $slots = $slotRepository->paginateSlots($id, $page);
+            return $this->json($slots, 200, [], ['groups' => 'slot:read']);
+
         }catch (\Exception $e) {
             return new JsonResponse([
                 'error' => 'Internal Server Error',

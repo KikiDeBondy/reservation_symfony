@@ -5,7 +5,9 @@ namespace App\Repository;
 use App\Entity\Slot;
 use DateTime;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
+use Doctrine\ORM\Tools\Pagination\Paginator;
 use Doctrine\Persistence\ManagerRegistry;
+use Symfony\Component\HttpFoundation\Request;
 
 /**
  * @extends ServiceEntityRepository<Slot>
@@ -18,35 +20,57 @@ class SlotRepository extends ServiceEntityRepository
     }
 
     //Retourner une semaine des slots non réservé d'un coiffeur donné
-    public function weeklySlotUnreserve(int $id): array
+    public function weeklySlotUnreserve(int $id, int $page, int $limit=7): array
     {
-        $start = new \DateTime('monday this week');
-        $end = new \DateTime('sunday this week');
-        return $this->createQueryBuilder('s')
+        $today = new \DateTime();
+        $start = (clone $today)->modify("+".($page * $limit)." days");
+        $end = (clone $start)->modify("+".($limit - 1)." days");
+        $data = $this->createQueryBuilder('s')
             ->andWhere('s.barber_id = :id')
             ->andWhere('s.date BETWEEN :start AND :end')
             ->andWhere('s.is_reserved = 0')
             ->setParameter('id', $id)
-            ->setParameter('start', $start)
-            ->setParameter('end', $end)
+            ->setParameter('start', $start->format('Y-m-d'))
+            ->setParameter('end', $end->format('Y-m-d'))
             ->getQuery()
             ->getResult();
+        return $data;
     }
 
+
     //Retourner une semaine des slots d'un coiffeur donné
-    public function weeklySlot(int $id): array
+//    public function weeklySlot(int $id): array
+//    {
+//        $start = new \DateTime('monday this week');
+//        $end = new \DateTime('sunday this week');
+//        return $this->createQueryBuilder('s')
+//            ->andWhere('s.barber_id = :id')
+//            ->andWhere('s.date BETWEEN :start AND :end')
+//            ->setParameter('id', $id)
+//            ->setParameter('start', $start)
+//            ->setParameter('end', $end)
+//            ->getQuery()
+//            ->getResult();
+//    }
+    public function weeklySlot(int $barberId, int $page, int $limit = 7): array
     {
-        $start = new \DateTime('monday this week');
-        $end = new \DateTime('sunday this week');
-        return $this->createQueryBuilder('s')
-            ->andWhere('s.barber_id = :id')
-            ->andWhere('s.date BETWEEN :start AND :end')
-            ->setParameter('id', $id)
-            ->setParameter('start', $start)
-            ->setParameter('end', $end)
+        $today = new \DateTime();
+        $startDate = (clone $today)->modify("+".($page * $limit)." days");
+        $endDate = (clone $startDate)->modify("+".($limit - 1)." days");
+
+        $data = $this->createQueryBuilder('s')
+            ->andWhere('s.barber_id = :barberId')
+            ->andWhere('s.date BETWEEN :startDate AND :endDate')
+            ->setParameter('barberId', $barberId)
+            ->setParameter('startDate', $startDate->format('Y-m-d 00:00:00'))
+            ->setParameter('endDate', $endDate->format('Y-m-d 23:59:59'))
+            ->orderBy('s.date', 'ASC')
+            ->addOrderBy('s.start', 'ASC')
             ->getQuery()
             ->getResult();
+        return $data;
     }
+
 
     //Retourner une valeur qui possède la date donné
     public function slotOfBarberExist(int $id,DateTime $date): bool{

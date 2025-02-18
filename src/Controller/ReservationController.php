@@ -101,41 +101,17 @@ final class ReservationController extends AbstractController
         }
     }
 
-
-//    #[Route('/{id}', name: 'app_reservation_show', methods: ['GET'])]
-//    public function show(Reservation $reservation): Response
-//    {
-//        return $this->render('reservation/show.html.twig', [
-//            'reservation' => $reservation,
-//        ]);
-//    }
-
-//    #[Route('/{id}/edit', name: 'app_reservation_edit', methods: ['GET', 'POST'])]
-//    public function edit(Request $request, Reservation $reservation, EntityManagerInterface $entityManager): Response
-//    {
-//        $form = $this->createForm(ReservationType::class, $reservation);
-//        $form->handleRequest($request);
-//
-//        if ($form->isSubmitted() && $form->isValid()) {
-//            $entityManager->flush();
-//
-//            return $this->redirectToRoute('app_reservation_index', [], Response::HTTP_SEE_OTHER);
-//        }
-//
-//        return $this->render('reservation/edit.html.twig', [
-//            'reservation' => $reservation,
-//            'form' => $form,
-//        ]);
-//    }
-//
-//    #[Route('/{id}', name: 'app_reservation_delete', methods: ['POST'])]
-//    public function delete(Request $request, Reservation $reservation, EntityManagerInterface $entityManager): Response
-//    {
-//        if ($this->isCsrfTokenValid('delete'.$reservation->getId(), $request->getPayload()->getString('_token'))) {
-//            $entityManager->remove($reservation);
-//            $entityManager->flush();
-//        }
-//
-//        return $this->redirectToRoute('app_reservation_index', [], Response::HTTP_SEE_OTHER);
-//    }
+    #[Route('/test/{page}', name: 'app_reservation_test', methods: ['GET'])]
+    public function test(int $page, ReservationRepository $reservationRepository): Response
+    {
+        try {
+            $reservations = $reservationRepository->test($page);
+            return $this->json($reservations, 200, [], ['groups' => ['reservation:read', 'account:read']]);
+        }catch (\Exception $e){
+            return new JsonResponse([
+                'error' => 'Internal Server Error',
+                'message' => $e->getMessage(),
+            ],500);
+        }
+    }
 }

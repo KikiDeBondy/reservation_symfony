@@ -48,16 +48,16 @@ class SlotService
         }
     }
 
-    public function weeklySlotUnreserve(int $id): array
+    public function weeklySlotUnreserve(int $id, int $page): array
     {
         // Récupérer les données de la base de données
-        $data = $this->slotRepository->weeklySlotUnreserve($id);
+        $data = $this->slotRepository->weeklySlotUnreserve($id, $page);
         return $data;
     }
-    public function weeklySlot(int $id): array
+    public function weeklySlot(int $id, int $page): array
     {
         // Récupérer les données de la base de données
-        $data = $this->slotRepository->weeklySlot($id);
+        $data = $this->slotRepository->weeklySlot($id, $page);
         return $data;
     }
     public function slotOfBarberExist(int $barberId, DateTime $date): bool{
