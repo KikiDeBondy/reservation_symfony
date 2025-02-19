@@ -3,6 +3,7 @@
 namespace App\Controller;
 
 use App\Entity\Reservation;
+use App\Entity\Slot;
 use App\Entity\User;
 use App\Exception\ReservationValidationException;
 use App\Form\ReservationType;
@@ -27,7 +28,7 @@ final class ReservationController extends AbstractController
     #[Route(name: 'app_reservation_index', methods: ['GET'])]
     public function index(ReservationRepository $reservationRepository, SerializerInterface $serializer): Response
     {
-        return $this->json($reservationRepository->findAll());
+        return $this->json($reservationRepository->findAll(), 201, [], ['groups' => ['reservation:read']]);
     }
 
     #[Route('/new', name: 'app_reservation_new', methods: ['POST'])]
@@ -42,8 +43,10 @@ final class ReservationController extends AbstractController
             // Récupérer les objets client et coiffeur grâce à leurs id
             $client = $entityManager->getRepository(User::class)->find($request->toArray()['client_id']);
             $barber = $entityManager->getRepository(User::class)->find($request->toArray()['barber_id']);
+            $slot = $entityManager->getRepository(Slot::class)->find($request->toArray()['slot_id']);
             $reservation->setClient($client);
             $reservation->setBarber($barber);
+            $reservation->setSlot($slot);
             $reservation = $this->reservationService->store($reservation);
 
             return $this->json($reservation, 201, [], ['groups' => ['reservation:read']]);
@@ -65,7 +68,7 @@ final class ReservationController extends AbstractController
     {
         try{
         $reservations = $this->reservationService->reservationByUser($id);
-        return $this->json($reservations,200, [], ['groups' => ['reservation:read', 'account:read']]);
+        return $this->json($reservations,200, [], ['groups' => ['reservation:read', 'account:read', 'slot:read']]);
         }catch (\Exception $e){
             return new JsonResponse([
                 'error' => 'Erreur lors de la récupération des réservations de l\'utilisateur',

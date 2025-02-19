@@ -23,7 +23,6 @@ class ReservationService
 
     public function store(Reservation $reservation): Reservation
     {
-
         // Validation des données de la réservation
         $errors = $this->validator->validate($reservation);
         if (count($errors) > 0) {

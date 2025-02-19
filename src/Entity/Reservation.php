@@ -46,6 +46,10 @@ class Reservation
     #[Groups(['reservation:read'])]
     private ?User $barber = null;
 
+    #[ORM\OneToOne(cascade: ['persist'])]
+    #[Groups(['reservation:read'])]
+    private ?Slot $slot = null;
+
     public function getId(): ?int
     {
         return $this->id;
@@ -107,6 +111,18 @@ class Reservation
     public function setBarber(?User $barber): static
     {
         $this->barber = $barber;
+
+        return $this;
+    }
+
+    public function getSlot(): ?Slot
+    {
+        return $this->slot;
+    }
+
+    public function setSlot(?Slot $slot): static
+    {
+        $this->slot = $slot;
 
         return $this;
     }
