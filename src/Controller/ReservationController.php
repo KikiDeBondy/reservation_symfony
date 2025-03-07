@@ -67,8 +67,22 @@ final class ReservationController extends AbstractController
     public function reservationByUser(int $id)
     {
         try{
-        $reservations = $this->reservationService->reservationByUser($id);
-        return $this->json($reservations,200, [], ['groups' => ['reservation:read', 'account:read', 'slot:read']]);
+            $reservations = $this->reservationService->reservationByUser($id);
+            return $this->json($reservations,200, [], ['groups' => ['reservation:read', 'account:read', 'slot:read']]);
+        }catch (\Exception $e){
+            return new JsonResponse([
+                'error' => 'Erreur lors de la récupération des réservations de l\'utilisateur',
+                'message' => $e->getMessage()
+            ], 500);
+        }
+    }
+
+    #[Route('/next/{id}', name: 'app_reservation_next', methods: ['GET'])]
+    public function nextReservationByUser(int $id){
+        try {
+            $reservation = $this->reservationService->nextReservation($id);
+            return $this->json($reservation,200, [], ['groups' => ['reservation:read']]);
+
         }catch (\Exception $e){
             return new JsonResponse([
                 'error' => 'Erreur lors de la récupération des réservations de l\'utilisateur',

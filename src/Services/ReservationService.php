@@ -65,4 +65,9 @@ class ReservationService
         $this->entityManager->flush();
         return $reservation;
     }
+
+    public function nextReservation(int $id)
+    {
+     return $this->reservationRepository->nextReservation($id);
+    }
 }

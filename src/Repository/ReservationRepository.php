@@ -39,6 +39,19 @@ class ReservationRepository extends ServiceEntityRepository
             ->getResult();
     }
 
+    public function nextReservation(int $id){
+        //Retourner la prochaine réservation s'il y'en a une
+        return $this->createQueryBuilder('r')
+            ->andWhere('r.client = :id')
+            ->andWhere('r.start > :now')
+            ->setParameter('id', $id)
+            ->setParameter('now', new \DateTime())
+            ->orderBy('r.start', 'ASC')
+            ->setMaxResults(1)
+            ->getQuery()
+            ->getOneOrNullResult();
+    }
+
     //    /**
     //     * @return Reservation[] Returns an array of Reservation objects
     //     */

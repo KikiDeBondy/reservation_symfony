@@ -49,12 +49,12 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
 
     #[ORM\Column(length: 255)]
     #[NotBlank(message: 'Le nom est obligatoire')]
-    #[Groups(['user:read', 'account:read'])]
+    #[Groups(['user:read', 'account:read', 'reservation:read'])]
     private ?string $name = null;
 
     #[ORM\Column(length: 255)]
     #[NotBlank(message: 'Le prénom est obligatoire')]
-    #[Groups(['user:read', 'account:read'])]
+    #[Groups(['user:read', 'account:read', 'reservation:read'])]
     private ?string $forename = null;
 
     #[ORM\Column(length: 10, nullable: true)]
