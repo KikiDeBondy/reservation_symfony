@@ -1,0 +1,44 @@
+
+services:
+  backend:
+    build: .
+    container_name: reservation_api
+    ports:
+      - "8000:80"
+    volumes:
+      - .:/var/www/html
+    environment:
+      - APP_ENV=dev
+      - DATABASE_URL=mysql://root:root@db/reservation_db
+    depends_on:
+      - db
+
+  frontend:
+    build: ../reservation_angular
+    container_name: reservation_client
+    ports:
+      - "80:80"
+    volumes:
+      - ../reservation_angular:/app
+    depends_on:
+      - backend
+
+  db:
+    image: mysql:8.0
+    container_name: mysql_db
+    restart: always
+    environment:
+      MYSQL_ROOT_PASSWORD: root
+      MYSQL_DATABASE: reservation_db
+    ports:
+      - "3306:3306"
+
+  phpmyadmin:
+    image: phpmyadmin/phpmyadmin
+    container_name: phpmyadmin
+    restart: always
+    ports:
+      - "8080:80"
+    environment:
+      PMA_HOST: db
+      MYSQL_ROOT_PASSWORD: root

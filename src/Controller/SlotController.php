@@ -99,7 +99,7 @@ final class SlotController extends AbstractController
             ], 500);
         }
     }
-    #[Route('/test/{id}/{page}', name: 'app_slot_absent', methods: ['GET'])]
+    #[Route('/test/{id}/{page}', name: 'app_slot', methods: ['GET'])]
     public function test(int $id,int $page,SlotRepository $slotRepository)
     {
         try {
@@ -113,12 +113,12 @@ final class SlotController extends AbstractController
             ], 500);
         }
     }
-
-    #[Route('/slot', name: 'app_slot')]
-    public function index(): Response
-    {
-        return $this->render('slot/index.html.twig', [
-            'controller_name' => 'SlotController',
-        ]);
-    }
+//
+//    #[Route('/slot', name: 'app_slot')]
+//    public function index(): Response
+//    {
+//        return $this->render('slot/index.html.twig', [
+//            'controller_name' => 'SlotController',
+//        ]);
+//    }
 }
