@@ -20,22 +20,45 @@ class SlotRepository extends ServiceEntityRepository
     }
 
     //Retourner une semaine des slots non réservé d'un coiffeur donné
-    public function weeklySlotUnreserve(int $id, int $page, int $limit=7): array
+    public function weeklySlotUnreserve(int $id, int $page, int $limit = 7): array
     {
         $today = new \DateTime();
         $start = (clone $today)->modify("+".($page * $limit)." days");
         $end = (clone $start)->modify("+".($limit - 1)." days");
-        $data = $this->createQueryBuilder('s')
+        $hour = (clone $today)->modify("+1hour");
+
+        // Initialisation : tableau contenant tous les jours demandés (même vides)
+        $days = [];
+        for ($i = 0; $i < $limit; $i++) {
+            $day = (clone $start)->modify("+$i days")->format('Y-m-d');
+            $days[$day] = []; // Initialiser chaque jour avec un tableau vide
+        }
+
+        // Récupération des créneaux disponibles
+        $results = $this->createQueryBuilder('s')
             ->andWhere('s.barber_id = :id')
             ->andWhere('s.date BETWEEN :start AND :end')
             ->andWhere('s.is_reserved = 0')
+            ->andWhere('(s.date = :today AND s.start > :hour) OR (s.date > :today)')
             ->setParameter('id', $id)
+            ->setParameter('today', $today->format('Y-m-d'))
             ->setParameter('start', $start->format('Y-m-d'))
             ->setParameter('end', $end->format('Y-m-d'))
+            ->setParameter('hour', $hour->format('H:i:s'))
             ->getQuery()
             ->getResult();
-        return $data;
+
+        // Organisation des créneaux par jour
+        foreach ($results as $slot) {
+            $slotDate = $slot->getDate()->format('Y-m-d'); // Adapter en fonction de ton entité
+            $days[$slotDate][] = $slot;
+        }
+
+        // Retourner le tableau contenant **tous les jours**, même vides
+        // Permet d'alléger le frontend
+        return $days;
     }
+
 
 
     //Retourner une semaine des slots d'un coiffeur donné
